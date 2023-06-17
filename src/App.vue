@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive } from 'vue'
+import { uid } from 'uid'
 import Header from './components/Header.vue'
 import Form from './components/Form.vue'
 import Paciente from './components/Paciente.vue'
@@ -7,6 +8,7 @@ import Paciente from './components/Paciente.vue'
 const pacientes = ref([])
 
 const paciente = reactive({
+  id: null,
   nombre: '',
   propietario: '',
   email: '',
@@ -15,19 +17,35 @@ const paciente = reactive({
 })
 
 const guardarPaciente = () => {
-  pacientes.value.push({
-    ...paciente
-  })
+  if (paciente.id) {
+    const { id } = paciente
+    const i = pacientes.value.findIndex(paciente => paciente.id === id)
+    pacientes.value[i] = { ...paciente }
+  } else {
+    pacientes.value.push({
+      ...paciente,
+      id: uid()
+    })
+  }
 
   Object.assign(paciente, {
     nombre: '',
     propietario: '',
     email: '',
     alta: '',
-    sintomas: ''
+    sintomas: '',
+    id: null
   })
 }
 
+const actualizarPaciente = (id) => {
+  const pacienteEditar = pacientes.value.filter(paciente => paciente.id === id)[0]
+  Object.assign(paciente, pacienteEditar)
+}
+
+const eliminarPaciente = (id) => {
+  pacientes.value = pacientes.value.filter(paciente => paciente.id !== id)
+}
 </script>
 
 <template>
@@ -35,7 +53,7 @@ const guardarPaciente = () => {
     <Header />
     <div class="mt-12 md:flex">
       <Form v-model:nombre="paciente.nombre" v-model:propietario="paciente.propietario" v-model:email="paciente.email"
-        v-model:alta="paciente.alta" v-model:sintomas="paciente.sintomas" @guardar-paciente="guardarPaciente"/>
+        v-model:alta="paciente.alta" v-model:sintomas="paciente.sintomas" @guardar-paciente="guardarPaciente" :id="paciente.id"/>
 
       <div class="md:w-1/2 md:h-screen overflow-y-scroll">
         <h3 class="font-black text-3xl text-center"> Administra tus pacientes</h3>
@@ -43,8 +61,9 @@ const guardarPaciente = () => {
           <p class="text-lg mt-5 text-center mb-10">
             Informacion de
             <span class="text-indigo-600 font-bold">Pacientes</span>
-        </p>
-          <Paciente v-for="paciente in pacientes" :paciente="paciente" :key="paciente.id"/>
+          </p>
+          <Paciente v-for="paciente in pacientes" :paciente="paciente" :key="paciente.id"
+            @actualizar-paciente="actualizarPaciente" @eliminar-paciente="eliminarPaciente" />
         </div>
         <p v-else class="mt-20 text-2xl text-center"> No hay pacientes.</p>
       </div>

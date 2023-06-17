@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, computed } from 'vue'
 import Alerta from './Alerta.vue'
 
 const alerta = reactive({
@@ -8,9 +8,13 @@ const alerta = reactive({
 })
 const emit = defineEmits(
     ['update:nombre', 'update:propietario', 'update:email', 'update:alta', 'update:sintomas', 'guardar-paciente']
-    )
+)
 
-const props = defineProps ({
+const props = defineProps({
+    id: {
+        type: [String, null],
+        required: true
+    },
     nombre: {
         type: String,
         required: true
@@ -33,23 +37,28 @@ const props = defineProps ({
     },
 })
 
-const validar = () =>{
-    if(Object.values(props).includes('')) {
+const validar = () => {
+    if (Object.values(props).includes('')) {
         alerta.mensaje = 'Todos los campos son obligatorios.'
         alerta.tipo = 'error'
         return
     } else {
         emit('guardar-paciente')
         alerta.mensaje = 'Guardado'
-        alerta.tipo = 'exito' }
+        alerta.tipo = 'exito'
+    }
 
-        setTimeout(() => {
-            Object.assign(alerta, {
-                tipo: '',
-                mensaje: ''
-            })
-        }, 3000)
+    setTimeout(() => {
+        Object.assign(alerta, {
+            tipo: '',
+            mensaje: ''
+        })
+    }, 3000)
 }
+
+const editando = computed(() => {
+    return props.id
+})
 </script>
 
 <template>
@@ -60,45 +69,50 @@ const validar = () =>{
             <span class="text-indigo-600 font-bold">Administralos</span>
         </p>
 
-        <Alerta v-if="alerta.mensaje" :alerta="alerta"/>
+        <Alerta v-if="alerta.mensaje" :alerta="alerta" />
         <form action="" class="bg-white shadow-md rounded-lg py-10 px-5 mb-10-" @submit.prevent="validar">
             <div class="mb-5">
                 <label for="mascota" class="block text-gray-700 uppercase font-bold">
                     Nombre Mascota
                 </label>
                 <input type="text" id="mascota" placeholder="Nombre de la mascota"
-                    class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md" :value="nombre" @input="$emit('update:nombre', $event.target.value)">
+                    class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md" :value="nombre"
+                    @input="$emit('update:nombre', $event.target.value)">
             </div>
             <div class="mb-5">
                 <label for="propietario" class="block text-gray-700 uppercase font-bold">
                     Nombre Propietario
                 </label>
                 <input type="text" id="propietario" placeholder="Nombre del propietario"
-                    class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md" :value="propietario" @input="$emit('update:propietario', $event.target.value)" >
+                    class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md" :value="propietario"
+                    @input="$emit('update:propietario', $event.target.value)">
             </div>
             <div class="mb-5">
                 <label for="email" class="block text-gray-700 uppercase font-bold">
                     Email
                 </label>
                 <input type="text" id="email" placeholder="Email del propietario"
-                    class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md" :value="email" @input="$emit('update:email', $event.target.value)">
+                    class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md" :value="email"
+                    @input="$emit('update:email', $event.target.value)">
             </div>
             <div class="mb-5">
                 <label for="alta" class="block text-gray-700 uppercase font-bold">
                     Alta
                 </label>
-                <input type="date" id="alta" class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md" :value="alta" @input="$emit('update:alta', $event.target.value)" >
+                <input type="date" id="alta" class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md" :value="alta"
+                    @input="$emit('update:alta', $event.target.value)">
             </div>
             <div class="mb-5">
                 <label for="sintomas" class="block text-gray-700 uppercase font-bold">
                     Sintomas
                 </label>
                 <textarea id="sintomas" placeholder="Descibre los sintomas."
-                    class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md h-40" :value="sintomas" @input="$emit('update:sintomas', $event.target.value)" />
+                    class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md h-40" :value="sintomas"
+                    @input="$emit('update:sintomas', $event.target.value)" />
             </div>
 
         <input type="submit"
             class="bg-indigo-600 w-full p-3 text-white uppercase font-bold hover:bg-indigo-500 cursor-pointer transition-colors"
-            value="Registrar paciente">
+            :value="[editando ? 'Guardar Cambios' : 'Registrar Paciente']">
     </form>
 </div></template>
